@@ -187,3 +187,11 @@ class Run:
 
     def __repr__(self):
         return "Run {} of {}".format(self.iRun, self.sTeamname)
+
+def convSec2Time(iSeconds):
+    sTime = ""
+    sTime += str(iSeconds // 60)
+    sTime += ":"
+    sTime += str(iSeconds  % 60)
+    return sTime
+

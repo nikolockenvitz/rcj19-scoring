@@ -52,11 +52,18 @@ Output (Column-Id, description):
  1 Teamname
  2 Total Score
  3 Total Time
+ 4 -
+ 5 Score Run 1
+ 6 Time Run 1
+ 7 Score Run 2
+ 8 Time Run 2
+ 9 Score Run 3
+10 Time Run 3
 
 """
 
 import sys
-from runParser import Run
+from runParser import Run, convSec2Time
 
 FILENAMES = [["iRuns.csv",      "oResult.csv"]]#,
              #["iRunsEntry.csv", "oResultEntry.csv"]]
@@ -71,24 +78,97 @@ for file in FILENAMES:
         print("*** Couldn't find '{}'. Make sure file exists.".format(file[0]))
         continue
 
+    # dictionary to store runs for each team
+    # key: teamname, value: [run1, run2, run3]
+    dTeams = {}
+
     # parse values and calculate points for each run
-    aRuns = []
     for sLine in aLines[1:]: # skip headline
-        aRuns.append(Run().parse(sLine).calculate())
+        oRun = Run().parse(sLine).calculate()
+        if(oRun.sTeamname in dTeams):
+            # add run to already existing runs of this team
+            dTeams[oRun.sTeamname].append(oRun)
+        else:
+            # insert new entry to dictionary
+            dTeams[oRun.sTeamname] = [oRun]
 
-    # group runs by team and additional rule (e.g. best 2 of 3)
+    # calculate total score and total time for each team (e.g. best 2 of 3)
+    # insert into sorted list aStandings (ordered by score desc, time asc)
+    # element in aStandings: [teamname, score, time, run1, run2, run3]
+    aStandings = []
+    for sTeamname, aRuns in dTeams.items():
+        # init entry which will be inserted into aStandings
+        aTeam = [sTeamname, 0, 0] + aRuns
 
-    # sort standings (score descending, time ascending)
+        # sort aRuns
+        # TODO: improve to O(n*log_n)
+        aConsideredRuns = []
+        for oRun in aRuns:
+            bInserted = False
+            for i in range(len(aConsideredRuns)):
+                if(oRun.iScore > aConsideredRuns[i].iScore or
+                   (oRun.iScore == aConsideredRuns[i].iScore and
+                    oRun.iTime  <  aConsideredRuns[i].iTime)):
+                    aConsideredRuns = aConsideredRuns[:i] + [oRun] + aConsideredRuns[i:]
+                    bInserted = True
+                    break
+            if(not bInserted):
+                aConsideredRuns.append(oRun)
+
+        # consider only best 2 runs
+        aConsideredRuns = aConsideredRuns[:2]
+
+        # total score and time
+        for oRun in aConsideredRuns:
+            aTeam[1] += oRun.iScore
+            aTeam[2] += oRun.iTime
+
+        # insert into aStandings
+        # TODO: currently O(n^2), improve to O(n*log_n), tree-like
+        bInserted = False
+        for i in range(len(aStandings)):
+            if(aTeam[1] > aStandings[i][1] or
+               (aTeam[1] == aStandings[i][1] and
+                aTeam[2] <  aStandings[i][2])):
+                # insert before
+                aStandings = aStandings[:i] + [aTeam] + aStandings[i:]
+                bInserted = True
+                break
+        if(not bInserted):
+            aStandings.append(aTeam)
 
     # write standings to file
     try:
         f = open(file[1], "w")
-        f.write("#;Team;Punktzahl;Zeit\n")
-        for oRun in aRuns:
-            f.write("{};\"{}\";{};{}\n".format(oRun.iRun,
-                                               oRun.sTeamname,
-                                               oRun.score,
-                                               oRun.iTime))
+        sLineTemplate = "{};\"{}\";{};{};;{};{};{};{};{};{}\n"
+        f.write(sLineTemplate.format("#","Team","Punktzahl","Zeit",
+                                     "Lauf 1","",
+                                     "Lauf 2","",
+                                     "Lauf 3",""))
+
+        iPosition  = 0
+        iDiff      = 1
+        iLastScore = None
+        iLastTime  = None
+        for aTeam in aStandings:
+            if(aTeam[1] != iLastScore or aTeam[2] != iLastTime):
+                iLastScore = aTeam[1]
+                iLastTime  = aTeam[2]
+                iPosition += iDiff
+                iDiff      = 1
+            else:
+                iDiff += 1
+
+            f.write(sLineTemplate.format(iPosition,
+                                         aTeam[0],
+                                         aTeam[1],
+                                         convSec2Time(aTeam[2]),
+                                         aTeam[3].iScore,
+                                         convSec2Time(aTeam[3].iTime),
+                                         aTeam[4].iScore,
+                                         convSec2Time(aTeam[4].iTime),
+                                         aTeam[5].iScore,
+                                         convSec2Time(aTeam[5].iTime)))
         f.close()
         print("Successfully wrote to '{}'.".format(file[1]))
     except PermissionError:
