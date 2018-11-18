@@ -56,9 +56,10 @@ Output (Column-Id, description):
 """
 
 import sys
+from runParser import Run
 
-FILENAMES = [["iRuns.csv",      "oResult.csv"],
-             ["iRunsEntry.csv", "oResultEntry.csv"]]
+FILENAMES = [["iRuns.csv",      "oResult.csv"]]#,
+             #["iRunsEntry.csv", "oResultEntry.csv"]]
 
 for file in FILENAMES:
     # read runs from file
@@ -67,10 +68,13 @@ for file in FILENAMES:
         aLines = f.readlines()
         f.close()
     except FileNotFoundError:
-        print("Couldn't find '{}'. Make sure file exists.".format(file[0]))
+        print("*** Couldn't find '{}'. Make sure file exists.".format(file[0]))
         continue
 
     # parse values and calculate points for each run
+    aRuns = []
+    for sLine in aLines[1:]: # skip headline
+        aRuns.append(Run().parse(sLine).calculate())
 
     # group runs by team and additional rule (e.g. best 2 of 3)
 
@@ -79,11 +83,16 @@ for file in FILENAMES:
     # write standings to file
     try:
         f = open(file[1], "w")
-        f.write("#;Team;Punktzahl;Zeit")
+        f.write("#;Team;Punktzahl;Zeit\n")
+        for oRun in aRuns:
+            f.write("{};\"{}\";{};{}\n".format(oRun.iRun,
+                                               oRun.sTeamname,
+                                               oRun.score,
+                                               oRun.iTime))
         f.close()
         print("Successfully wrote to '{}'.".format(file[1]))
     except PermissionError:
-        print("Couldn't write to '{}'. Is it opened in another program?".format(file[1]))
+        print("*** Couldn't write to '{}'. Is it opened in another program?".format(file[1]))
         continue
 
 # if program is executed in cmd, prevent closing
