@@ -190,8 +190,8 @@ class Run:
 
 def convSec2Time(iSeconds):
     sTime = ""
-    sTime += str(iSeconds // 60)
+    sTime += format(iSeconds // 60, "02d")
     sTime += ":"
-    sTime += str(iSeconds  % 60)
+    sTime += format(iSeconds  % 60, "02d")
     return sTime
 

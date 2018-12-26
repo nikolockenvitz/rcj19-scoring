@@ -1,5 +1,6 @@
-# Input- and Output-Files in CSV-Format
+# Input- and Output-Files in CSV- and HTML-Format
 *.csv
+*.html
 
 # Compiled / optimized files
 __pycache__/

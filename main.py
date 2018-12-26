@@ -65,8 +65,8 @@ Output (Column-Id, description):
 import sys
 from runParser import Run, convSec2Time
 
-FILENAMES = [["iRuns.csv",      "oResult.csv"]]#,
-             #["iRunsEntry.csv", "oResultEntry.csv"]]
+FILENAMES = [["iRuns.csv",      "oResult.csv",      "oResult.html"]]#,
+             #["iRunsEntry.csv", "oResultEntry.csv", "oResultEntry.html"]]
 
 for file in FILENAMES:
     # read runs from file
@@ -140,52 +140,58 @@ for file in FILENAMES:
         if(not bInserted):
             aStandings.append(aTeam)
 
-    # write standings to file
-    try:
-        f = open(file[1], "w")
-        sLineTemplate = "{};\"{}\";{};{};;{};{};{};{};{};{}\n"
-        f.write(sLineTemplate.format("#","Team","Punktzahl","Zeit",
-                                     "Lauf 1","",
-                                     "Lauf 2","",
-                                     "Lauf 3",""))
+    # prepare output
+    aOutput = []
+    aOutput.append(["#","Team","Punktzahl","Zeit","Lauf 1","","Lauf 2","","Lauf 3",""])
 
-        iPosition  = 0
-        iDiff      = 1
-        iLastScore = None
-        iLastTime  = None
-        for aTeam in aStandings:
-            if(aTeam[1] != iLastScore or aTeam[2] != iLastTime):
-                iLastScore = aTeam[1]
-                iLastTime  = aTeam[2]
-                iPosition += iDiff
-                iDiff      = 1
-            else:
-                iDiff += 1
+    iPosition  = 0
+    iDiff      = 1
+    iLastScore = None
+    iLastTime  = None
+    for aTeam in aStandings:
+        if(aTeam[1] != iLastScore or aTeam[2] != iLastTime):
+            iLastScore = aTeam[1]
+            iLastTime  = aTeam[2]
+            iPosition += iDiff
+            iDiff      = 1
+        else:
+            iDiff += 1
 
-            aScoresAndTimes = ["-","-","-","-","-","-"]
-            for oRun in aTeam[3:6]:
-                if(oRun.iRun < 1 or oRun.iRun > 3 or
-                   aScoresAndTimes[(oRun.iRun-1)*2] != "-"):
-                    print("*** Error: Invalid run-id {} for team '{}'".format(oRun.iRun, oRun.sTeamname))
-                    continue
-                aScoresAndTimes[(oRun.iRun-1)*2]   = oRun.iScore
-                aScoresAndTimes[(oRun.iRun-1)*2+1] = convSec2Time(oRun.iTime)
-                
-            f.write(sLineTemplate.format(iPosition,
-                                         aTeam[0],
-                                         aTeam[1],
-                                         convSec2Time(aTeam[2]),
-                                         aScoresAndTimes[0],
-                                         aScoresAndTimes[1],
-                                         aScoresAndTimes[2],
-                                         aScoresAndTimes[3],
-                                         aScoresAndTimes[4],
-                                         aScoresAndTimes[5]))
-        f.close()
-        print("Successfully wrote to '{}'.".format(file[1]))
-    except PermissionError:
-        print("*** Couldn't write to '{}'. Is it opened in another program?".format(file[1]))
-        continue
+        aScoresAndTimes = ["-","-","-","-","-","-"]
+        for oRun in aTeam[3:6]:
+            if(oRun.iRun < 1 or oRun.iRun > 3 or
+                aScoresAndTimes[(oRun.iRun-1)*2] != "-"):
+                print("*** Error: Invalid run-id {} for team '{}'".format(oRun.iRun, oRun.sTeamname))
+                continue
+            aScoresAndTimes[(oRun.iRun-1)*2]   = oRun.iScore
+            aScoresAndTimes[(oRun.iRun-1)*2+1] = convSec2Time(oRun.iTime)
+
+        aOutput.append([iPosition, aTeam[0], aTeam[1], convSec2Time(aTeam[2]),
+                        aScoresAndTimes[0], aScoresAndTimes[1],
+                        aScoresAndTimes[2], aScoresAndTimes[3],
+                        aScoresAndTimes[4], aScoresAndTimes[5]])
+
+    # write standings to CSV- and HTML-file
+    aHeader        = ["",
+                      "<html><body><table border=\"1\" cellspacing=\"0\" cellpadding=\"10\">"]
+    aLineTemplates = ["{};\"{}\";{};{};;{};{};{};{};{};{}\n",
+                      "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>"]
+    aFooter        = ["",
+                      "</table></body></html>"]
+    for i in range(len(FILENAMES[0])-1):
+        try:
+            f = open(file[i+1], "w")
+            f.write(aHeader[i])
+
+            sLineTemplate = aLineTemplates[i]
+            for aLine in aOutput:
+                f.write(sLineTemplate.format(*aLine))
+            f.write(aFooter[i])
+            f.close()
+            print("Successfully wrote to '{}'.".format(file[i+1]))
+        except PermissionError:
+            print("*** Couldn't write to '{}'. Is it opened in another program?".format(file[i+1]))
+            continue
 
 # if program is executed in cmd, prevent closing
 if("idlelib" not in sys.modules): input("")
