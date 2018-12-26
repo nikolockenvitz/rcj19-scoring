@@ -84,6 +84,9 @@ for file in FILENAMES:
 
     # parse values and calculate points for each run
     for sLine in aLines[1:]: # skip headline
+        if(sLine.strip() == "" or
+           sLine.strip() == ";"*(len(sLine.strip()))):
+            continue
         oRun = Run().parse(sLine).calculate()
         if(oRun.sTeamname in dTeams):
             # add run to already existing runs of this team
@@ -159,16 +162,25 @@ for file in FILENAMES:
             else:
                 iDiff += 1
 
+            aScoresAndTimes = ["-","-","-","-","-","-"]
+            for oRun in aTeam[3:6]:
+                if(oRun.iRun < 1 or oRun.iRun > 3 or
+                   aScoresAndTimes[(oRun.iRun-1)*2] != "-"):
+                    print("*** Error: Invalid run-id {} for team '{}'".format(oRun.iRun, oRun.sTeamname))
+                    continue
+                aScoresAndTimes[(oRun.iRun-1)*2]   = oRun.iScore
+                aScoresAndTimes[(oRun.iRun-1)*2+1] = convSec2Time(oRun.iTime)
+                
             f.write(sLineTemplate.format(iPosition,
                                          aTeam[0],
                                          aTeam[1],
                                          convSec2Time(aTeam[2]),
-                                         aTeam[3].iScore,
-                                         convSec2Time(aTeam[3].iTime),
-                                         aTeam[4].iScore,
-                                         convSec2Time(aTeam[4].iTime),
-                                         aTeam[5].iScore,
-                                         convSec2Time(aTeam[5].iTime)))
+                                         aScoresAndTimes[0],
+                                         aScoresAndTimes[1],
+                                         aScoresAndTimes[2],
+                                         aScoresAndTimes[3],
+                                         aScoresAndTimes[4],
+                                         aScoresAndTimes[5]))
         f.close()
         print("Successfully wrote to '{}'.".format(file[1]))
     except PermissionError:
