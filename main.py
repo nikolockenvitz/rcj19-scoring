@@ -4,14 +4,15 @@ standings afterward.
 
 Input are two semicolon-separated CSV files (so they can be
 edited in Excel as well) which contain all runs (one file
-for Line and one for Line Enty).
+for Line and one for Line Entry).
 
 After calculating points for each run, total score for each
 team will be calculated (e.g. best 2 of 3 runs). Teams will
 be ordered by points and time.
 
 Standings are written to semicolon-separated CSV files, one
-file for Line and one for Line Entry
+file for Line and one for Line Entry. Additionally the
+result is written into one HTML document.
 
 Format of files:
 Input (Column-Id, description):
@@ -64,9 +65,12 @@ Output (Column-Id, description):
 
 import sys
 from runParser import Run, convSec2Time
+from html import HTMLOutput
 
-FILENAMES = [["iRuns.csv",      "oResult.csv",      "oResult.html"]]#,
-             #["iRunsEntry.csv", "oResultEntry.csv", "oResultEntry.html"]]
+FILENAMES = [["iRuns.csv",      "oResult.csv"],
+             ["iRunsEntry.csv", "oResultEntry.csv"]]
+
+oHTMLOutput = HTMLOutput()
 
 for file in FILENAMES:
     # read runs from file
@@ -142,7 +146,6 @@ for file in FILENAMES:
 
     # prepare output
     aOutput = []
-    aOutput.append(["#","Team","Punktzahl","Zeit","Lauf 1","","Lauf 2","","Lauf 3",""])
 
     iPosition  = 0
     iDiff      = 1
@@ -171,27 +174,27 @@ for file in FILENAMES:
                         aScoresAndTimes[2], aScoresAndTimes[3],
                         aScoresAndTimes[4], aScoresAndTimes[5]])
 
-    # write standings to CSV- and HTML-file
-    aHeader        = ["",
-                      "<html><body><table border=\"1\" cellspacing=\"0\" cellpadding=\"10\">"]
-    aLineTemplates = ["{};\"{}\";{};{};;{};{};{};{};{};{}\n",
-                      "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>"]
-    aFooter        = ["",
-                      "</table></body></html>"]
-    for i in range(len(FILENAMES[0])-1):
-        try:
-            f = open(file[i+1], "w")
-            f.write(aHeader[i])
+    # prepare HTML output
+    oHTMLOutput.addStanding("Rescue Line" + (" Entry" if "entry" in file[0].lower() else ""),
+                            aOutput)
 
-            sLineTemplate = aLineTemplates[i]
-            for aLine in aOutput:
-                f.write(sLineTemplate.format(*aLine))
-            f.write(aFooter[i])
-            f.close()
-            print("Successfully wrote to '{}'.".format(file[i+1]))
-        except PermissionError:
-            print("*** Couldn't write to '{}'. Is it opened in another program?".format(file[i+1]))
-            continue
+    # write standings to CSV-file
+    try:
+        f = open(file[1], "w")
+
+        sLineTemplate = "{};\"{}\";{};{};;{};{};{};{};{};{}\n"
+        f.write(sLineTemplate.format("#","Team","Punktzahl","Zeit","Lauf 1","","Lauf 2","","Lauf 3",""))
+        for aLine in aOutput:
+            f.write(sLineTemplate.format(*aLine))
+        f.close()
+        print("Successfully wrote to '{}'.".format(file[1]))
+    except PermissionError:
+        print("*** Couldn't write to '{}'. Is it opened in another program?".format(file[1]))
+
+    print("")
+
+# write standings to HTML-document
+oHTMLOutput.output()
 
 # if program is executed in cmd, prevent closing
 if("idlelib" not in sys.modules): input("")
