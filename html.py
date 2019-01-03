@@ -1,13 +1,16 @@
 FILENAME_HTML_TEMPLATE = "template.html"
 FILENAME_HTML_OUTPUT   = "results.html"
 
+TEAMS_QUALIFYING_LINE  = None
+TEAMS_QUALIFYING_ENTRY = None
+
 class HTMLOutput:
     def __init__(self):
         self.loadHTMLTemplate()
-        self.sStanding1Title   = ""
-        self.sStanding1Content = ""
-        self.sStanding2Title   = ""
-        self.sStanding2Content = ""
+        self.sStandingTitleLine    = ""
+        self.sStandingContentLine  = ""
+        self.sStandingTitleEntry   = ""
+        self.sStandingContentEntry = ""
 
     def loadHTMLTemplate(self):
         self.sHTMLTemplate = ""
@@ -20,26 +23,33 @@ class HTMLOutput:
 
     def addStanding(self, sTitle, aContent):
         sHTMLRows = ""
-        sRowTemplate = "<tr>" + "<td>{}</td>"*10 + "</tr>"
+        sRowTemplate = "<tr style=\"{}\">" + "<td>{}</td>"*10 + "</tr>"
 
         for aRow in aContent:
+            aRow = [""] + aRow
+            if(("entry" in sTitle.lower() and
+                TEAMS_QUALIFYING_ENTRY != None and
+                aRow[1] <= TEAMS_QUALIFYING_ENTRY) or
+               ("entry" not in sTitle.lower() and
+                TEAMS_QUALIFYING_LINE != None and
+                aRow[1] <= TEAMS_QUALIFYING_LINE)):
+                aRow[0] = "background-color: lightgreen;"
             sHTMLRows += sRowTemplate.format(*aRow)
             sHTMLRows += "\n"
 
-        if(self.sStanding1Title == "" and
-           self.sStanding1Content == ""):
-            self.sStanding1Title   = sTitle
-            self.sStanding1Content = sHTMLRows
+        if("entry" in sTitle.lower()):
+            self.sStandingTitleEntry   = sTitle
+            self.sStandingContentEntry = sHTMLRows
         else:
-            self.sStanding2Title   = sTitle
-            self.sStanding2Content = sHTMLRows
+            self.sStandingTitleLine   = sTitle
+            self.sStandingContentLine = sHTMLRows
 
     def output(self):
         if(self.sHTMLTemplate != ""):
-            sHTML = self.sHTMLTemplate.format(title1 = self.sStanding1Title,
-                                              content1 = self.sStanding1Content,
-                                              title2 = self.sStanding2Title,
-                                              content2 = self.sStanding2Content)
+            sHTML = self.sHTMLTemplate.format(title1 = self.sStandingTitleLine,
+                                              content1 = self.sStandingContentLine,
+                                              title2 = self.sStandingTitleEntry,
+                                              content2 = self.sStandingContentEntry)
 
             try:
                 f = open(FILENAME_HTML_OUTPUT, "w")
