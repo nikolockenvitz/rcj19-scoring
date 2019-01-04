@@ -1,3 +1,5 @@
+from time import strftime
+
 FILENAME_HTML_TEMPLATE = "template.html"
 FILENAME_HTML_OUTPUT   = "results.html"
 
@@ -49,7 +51,9 @@ class HTMLOutput:
             sHTML = self.sHTMLTemplate.format(title1 = self.sStandingTitleLine,
                                               content1 = self.sStandingContentLine,
                                               title2 = self.sStandingTitleEntry,
-                                              content2 = self.sStandingContentEntry)
+                                              content2 = self.sStandingContentEntry,
+                                              lastUpdateTime = strftime("%H:%M"),
+                                              lastUpdateDate = strftime("%d.%m.%Y"))
 
             try:
                 f = open(FILENAME_HTML_OUTPUT, "w")
