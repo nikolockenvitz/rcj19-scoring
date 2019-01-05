@@ -64,7 +64,7 @@ Output (Column-Id, description):
 """
 
 import sys
-from runParser import Run, convSec2Time
+from runParser import Run, RunEntry, convSec2Time
 from html import HTMLOutput
 
 FILENAMES = [["iRuns.csv",      "oResult.csv"],
@@ -91,7 +91,11 @@ for file in FILENAMES:
         if(sLine.strip() == "" or
            sLine.strip() == ";"*(len(sLine.strip()))):
             continue
-        oRun = Run().parse(sLine).calculate()
+        if("entry" in file[0].lower()):
+            oRun = RunEntry()
+        else:
+            oRun = Run()
+        oRun.parse(sLine).calculate()
         if(oRun.sTeamname in dTeams):
             # add run to already existing runs of this team
             dTeams[oRun.sTeamname].append(oRun)

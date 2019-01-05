@@ -54,6 +54,7 @@ POINTS_HIGH_VICTIM_DEAD  = 30
 POINTS_VICTIM_DEAD_BEFORE = 5
 POINTS_DEDUCTION_LOP     =  5 # per victim
 POINTS_FINDING_LINE      = 20
+POINTS_ENTRY_VICTIM      = 40
 
 class Run:
     def __init__(self):
@@ -125,23 +126,33 @@ class Run:
 
         self.iScore += POINTS_TILE_FIRST_TRY # for starting tile
 
-        # points per section
+        self.iScore += self.getPointsForSections()
+        self.iScore += self.getExtraPoints()
+        self.iScore += self.getPointsForVictims()
+
+        return self
+
+    def getPointsForSections(self):
+        iPoints = 0
         for i in range(8):
             if(self.aAttempts[i] == 1):
-                self.iScore += self.aTiles[i] * POINTS_TILE_FIRST_TRY
+                iPoints += self.aTiles[i] * POINTS_TILE_FIRST_TRY
             elif(self.aAttempts[i] == 2):
-                self.iScore += self.aTiles[i] * POINTS_TILE_SECOND_TRY
+                iPoints += self.aTiles[i] * POINTS_TILE_SECOND_TRY
             elif(self.aAttempts[i] == 3):
-                self.iScore += self.aTiles[i] * POINTS_TILE_THIRD_TRY
+                iPoints += self.aTiles[i] * POINTS_TILE_THIRD_TRY
+        return iPoints
 
-        # extrapoints (gap, obstacle, ...)
-        self.iScore += self.iGaps          * POINTS_GAP
-        self.iScore += self.iObstacles     * POINTS_OBSTACLE
-        self.iScore += self.iBumper        * POINTS_BUMPER
-        self.iScore += self.iRamps         * POINTS_RAMP
-        self.iScore += self.iIntersections * POINTS_INTERSECTION
+    def getExtraPoints(self):
+        iPoints = 0
+        iPoints += self.iGaps          * POINTS_GAP
+        iPoints += self.iObstacles     * POINTS_OBSTACLE
+        iPoints += self.iBumper        * POINTS_BUMPER
+        iPoints += self.iRamps         * POINTS_RAMP
+        iPoints += self.iIntersections * POINTS_INTERSECTION
+        return iPoints
 
-        # points for victims
+    def getPointsForVictims(self):
         iPointsVictim = 0
 
         if(self.bLowEvacuationTile):
@@ -159,12 +170,12 @@ class Run:
                           * self.iLOPsEvacuation
                           * POINTS_DEDUCTION_LOP )
 
-        self.iScore += max(0, iPointsVictim) # no negative points
+        iPointsVictim = max(0, iPointsVictim) # no negative points
 
         if(self.bFoundLineAgain):
-            self.iScore += POINTS_FINDING_LINE
-        
-        return self
+            iPointsVictim += POINTS_FINDING_LINE
+
+        return iPointsVictim
 
     def show(self):
         print(self.__repr__())
@@ -187,6 +198,14 @@ class Run:
 
     def __repr__(self):
         return "Run {} of {}".format(self.iRun, self.sTeamname)
+
+class RunEntry(Run):
+    def __init__(self):
+        super().__init__()
+
+    def getPointsForVictims(self):
+        iPointsVictim = self.iVictimsAlive * POINTS_ENTRY_VICTIM
+        return iPointsVictim
 
 def convSec2Time(iSeconds):
     sTime = ""
