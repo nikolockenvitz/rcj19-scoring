@@ -1,8 +1,20 @@
 <html>
+	<head>
+		<title>Ergebnisse RCJ Berlin 2019 - Rescue Line</title>
+	</head>
 	<body>
 		<div style="float: left; margin-right: 50px; margin-bottom: 10px;">
 			<h1 style="margin:0;">{title1}</h1>
 			<table border="1" cellspacing="0" cellpadding="4">
+				<colgroup>
+					<col/><col/><col/><col/>
+					<col style="min-width: 50px;" />
+					<col style="min-width: 50px;" />
+					<col style="min-width: 50px;" />
+					<col style="min-width: 50px;" />
+					<col style="min-width: 50px;" />
+					<col style="min-width: 50px;" />
+				</colgroup>
 				<tr><td>#</td><td>Team</td><td>Punktzahl</td><td>Zeit</td><td>Lauf 1</td><td></td><td>Lauf 2</td><td></td><td>Lauf 3</td><td></td></tr>
 				{content1}
 			</table>
@@ -11,13 +23,24 @@
 		<div style="float: left; margin-bottom: 10px;">
 			<h1 style="margin:0;">{title2}</h1>
 			<table border="1" cellspacing="0" cellpadding="4">
+				<colgroup>
+					<col/><col/><col/><col/>
+					<col style="min-width: 50px;" />
+					<col style="min-width: 50px;" />
+					<col style="min-width: 50px;" />
+					<col style="min-width: 50px;" />
+					<col style="min-width: 50px;" />
+					<col style="min-width: 50px;" />
+				</colgroup>
 				<tr><td>#</td><td>Team</td><td>Punktzahl</td><td>Zeit</td><td>Lauf 1</td><td></td><td>Lauf 2</td><td></td><td>Lauf 3</td><td></td></tr>
 				{content2}
 			</table>
 		</div>
 		
-		<div style="position: absolute; bottom: 1em;">
+		<div style="position: absolute; bottom: 5px;">
 			Letzte Aktualisierung: {lastUpdateTime} ({lastUpdateDate})
+			<br>
+			<a href="https://github.com/nikolockenvitz/rcj19-scoring">github.com/nikolockenvitz/rcj19-scoring</a>
 		</div>
 	</body>
 </html>
