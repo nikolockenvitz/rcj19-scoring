@@ -3,8 +3,8 @@ from time import strftime
 FILENAME_HTML_TEMPLATE = "template.html"
 FILENAME_HTML_OUTPUT   = "results.html"
 
-TEAMS_QUALIFYING_LINE  = None
-TEAMS_QUALIFYING_ENTRY = None
+TEAMS_QUALIFYING_LINE  = 3
+TEAMS_QUALIFYING_ENTRY = 4
 
 class HTMLOutput:
     def __init__(self):
