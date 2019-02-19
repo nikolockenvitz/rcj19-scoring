@@ -1,4 +1,5 @@
 from time import strftime
+from winColorPrinter import *
 
 FILENAME_HTML_TEMPLATE = "template.html"
 FILENAME_HTML_OUTPUT   = "results.html"
@@ -21,7 +22,7 @@ class HTMLOutput:
             self.sHTMLTemplate = f.read()
             f.close()
         except FileNotFoundError:
-            print("*** Couldn't find '{}'. Make sure file exists.".format(FILENAME_HTML_TEMPLATE))
+            printError("Couldn't find '{}'. Make sure file exists.".format(FILENAME_HTML_TEMPLATE))
 
     def addStanding(self, sTitle, aContent):
         sHTMLRows = ""
@@ -59,9 +60,9 @@ class HTMLOutput:
                 f = open(FILENAME_HTML_OUTPUT, "w")
                 f.write(sHTML)
                 f.close()
-                print("Successfully wrote to '{}'.".format(FILENAME_HTML_OUTPUT))
+                printSuccess("Successfully wrote to '{}'.".format(FILENAME_HTML_OUTPUT))
             except PermissionError:
-                print("*** Couldn't write to '{}'. Is it opened in another program?".format(file[1]))
+                printError("Couldn't write to '{}'. Is it opened in another program?".format(file[1]))
         else:
-            print("*** Couldn't write to '{}' since loading of template failed.".format(FILENAME_HTML_OUTPUT))
+            printError("Couldn't write to '{}' since loading of template failed.".format(FILENAME_HTML_OUTPUT))
 

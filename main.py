@@ -66,6 +66,7 @@ Output (Column-Id, description):
 import sys
 from runParser import Run, RunEntry, convSec2Time
 from html import HTMLOutput
+from winColorPrinter import *
 
 FILENAMES = [["iRuns.csv",      "oResult.csv"],
              ["iRunsEntry.csv", "oResultEntry.csv"]]
@@ -79,7 +80,7 @@ for file in FILENAMES:
         aLines = f.readlines()
         f.close()
     except FileNotFoundError:
-        print("*** Couldn't find '{}'. Make sure file exists.".format(file[0]))
+        printError("Couldn't find '{}'. Make sure file exists.".format(file[0]))
         continue
 
     # dictionary to store runs for each team
@@ -168,7 +169,7 @@ for file in FILENAMES:
         for oRun in aTeam[3:6]:
             if(oRun.iRun < 1 or oRun.iRun > 3 or
                 aScoresAndTimes[(oRun.iRun-1)*2] != "-"):
-                print("*** Error: Invalid run-id {} for team '{}'".format(oRun.iRun, oRun.sTeamname))
+                printWarning("Invalid run-id {} for team '{}'".format(oRun.iRun, oRun.sTeamname))
                 continue
             aScoresAndTimes[(oRun.iRun-1)*2]   = oRun.iScore
             aScoresAndTimes[(oRun.iRun-1)*2+1] = convSec2Time(oRun.iTime)
@@ -191,9 +192,9 @@ for file in FILENAMES:
         for aLine in aOutput:
             f.write(sLineTemplate.format(*aLine))
         f.close()
-        print("Successfully wrote to '{}'.".format(file[1]))
+        printSuccess("Successfully wrote to '{}'.".format(file[1]))
     except PermissionError:
-        print("*** Couldn't write to '{}'. Is it opened in another program?".format(file[1]))
+        printError("Couldn't write to '{}'. Is it opened in another program?".format(file[1]))
 
     print("")
 
