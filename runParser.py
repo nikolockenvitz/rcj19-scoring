@@ -156,21 +156,12 @@ class Run:
         iPointsVictim = 0
 
         if(self.bLowEvacuationTile):
-            iPointsVictim += self.iVictimsAlive      * POINTS_LOW_VICTIM_ALIVE
-            iPointsVictim += self.iVictimsDeadAfter  * POINTS_LOW_VICTIM_DEAD
-            iPointsVictim += self.iVictimsDeadBefore * POINTS_VICTIM_DEAD_BEFORE
+            iPointsVictim += self.iVictimsAlive      * max(0, POINTS_LOW_VICTIM_ALIVE - self.iLOPsEvacuation * POINTS_DEDUCTION_LOP)
+            iPointsVictim += self.iVictimsDeadAfter  * max(0, POINTS_LOW_VICTIM_DEAD - self.iLOPsEvacuation * POINTS_DEDUCTION_LOP)
         else:
-            iPointsVictim += self.iVictimsAlive      * POINTS_HIGH_VICTIM_ALIVE
-            iPointsVictim += self.iVictimsDeadAfter  * POINTS_HIGH_VICTIM_DEAD
-            iPointsVictim += self.iVictimsDeadBefore * POINTS_VICTIM_DEAD_BEFORE
-
-        iPointsVictim -= ((self.iVictimsAlive     +
-                           self.iVictimsDeadAfter +
-                           self.iVictimsDeadBefore)
-                          * self.iLOPsEvacuation
-                          * POINTS_DEDUCTION_LOP )
-
-        iPointsVictim = max(0, iPointsVictim) # no negative points
+            iPointsVictim += self.iVictimsAlive      * max(0, POINTS_HIGH_VICTIM_ALIVE - self.iLOPsEvacuation * POINTS_DEDUCTION_LOP)
+            iPointsVictim += self.iVictimsDeadAfter  * max(0, POINTS_HIGH_VICTIM_DEAD - self.iLOPsEvacuation * POINTS_DEDUCTION_LOP)
+        iPointsVictim += self.iVictimsDeadBefore * max(0, POINTS_VICTIM_DEAD_BEFORE - self.iLOPsEvacuation * POINTS_DEDUCTION_LOP)
 
         if(self.bFoundLineAgain):
             iPointsVictim += POINTS_FINDING_LINE
